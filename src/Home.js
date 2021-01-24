@@ -4,21 +4,34 @@ import BlogList from "./BlogList";
 const Home = () => {
   const [blogs, setBlogs] = useState(null);
   const [isPending, setIsPending] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:8000/blogs").then((res) => {
-      return res.json().then((data) => {
-        setBlogs(data);
-        setIsPending(false);
-      });
-    });
+    const getBlogs = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/blogs");
+        if (!res.ok) {
+          throw Error("error while fetching blogs...");
+        }
+        const blogsFetched = await res.json();
+        setBlogs(blogsFetched);
+      } catch (err) {
+        setError(err.message);
+      }
+      setIsPending(false);
+    };
+    
+      getBlogs();
+  
   }, []);
+
 
   return (
     <div className="home">
-      {isPending && <div>Loading</div>}
-      {blogs && <BlogList const blogs={blogs} title="What a nice title" />}
-      {blogs && (
+      { error && <div>{ error }</div> }
+      { isPending && <div>Loading</div> }
+      { blogs && <BlogList const blogs={ blogs } title="What a nice title" />}
+      { blogs && (
         <BlogList
           const
           blogs={blogs.filter((blog) => blog.author === "author2")}
